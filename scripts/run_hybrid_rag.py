@@ -150,6 +150,12 @@ def main():
             for sid, prob_score in zip(candidates, probs):
                 if prob_score >= args.verification_threshold:
                     verified.append(sid)
+            
+            # Debug: Print scores for first problem
+            if len(predictions) == 0 and args.verification_threshold == 0.5:
+                print(f"\n🔍 Debug - Verifier scores for problem 1:")
+                for sid, score in zip(candidates[:10], probs[:10]):
+                    print(f"  {sid}: {score:.4f}")
         
         predictions.append({
             "id": prob.get("id", prob.get("problem_id", "")),
