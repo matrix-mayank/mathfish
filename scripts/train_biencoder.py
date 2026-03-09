@@ -158,7 +158,12 @@ def main():
     best_loss = float("inf")
     steps_since_best = 0
     best_state = None  # will hold state_dicts for best step
-    for batch in dataloader:
+    
+    # Create infinite dataloader iterator
+    import itertools
+    dataloader_infinite = itertools.cycle(dataloader)
+    
+    for batch in dataloader_infinite:
         if step >= args.max_steps:
             break
         problems_txt = [x["problem_text"] for x in batch]
