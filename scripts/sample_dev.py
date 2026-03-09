@@ -61,6 +61,7 @@ def main():
     os.makedirs(os.path.dirname(out_path), exist_ok=True)
 
     out = []
+    skipped = 0
     for i in indices:
         row = rows[i]
         pid = row.get("id") or row.get("problem_id") or f"dev_{i}"
@@ -72,14 +73,28 @@ def main():
             except Exception:
                 elements = {}
         standards = row.get("standards") or []
-        standard_ids = [s[1] if isinstance(s, (list, tuple)) and len(s) > 1 else s for s in standards]
+        # Extract standard IDs and filter for Addressing/Alignment relations
+        standard_ids = []
+        for s in standards:
+            if isinstance(s, (list, tuple)) and len(s) > 1:
+                relation, std_id = s[0], s[1]
+                if relation in ["Addressing", "Alignment"]:
+                    standard_ids.append(std_id)
+            elif isinstance(s, str):
+                standard_ids.append(s)
+        
+        # Skip problems without standards
+        if not standard_ids:
+            skipped += 1
+            continue
+            
         text = clean_text(text, elements)
         out.append({"id": pid, "text": text, "standard_ids": standard_ids})
 
     with open(out_path, "w") as f:
         for d in out:
             f.write(json.dumps(d) + "\n")
-    print(f"Sampled {len(out)} examples (seed={args.seed}) -> {out_path}")
+    print(f"Sampled {len(out)} examples with standards (skipped {skipped} without standards, seed={args.seed}) -> {out_path}")
 
 
 if __name__ == "__main__":
